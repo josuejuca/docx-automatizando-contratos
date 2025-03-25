@@ -1,21 +1,21 @@
-# teste versão com windows e Word
+# teste versão com linux e libreoffice
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from docx import Document
-from docx2pdf import convert
 from num2words import num2words
 from datetime import datetime
 import os
 import uuid
 import tempfile
 import locale
+import subprocess
 
 # Força a localidade para português (para formatar data e número corretamente)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
 except locale.Error:
-    pass  # fallback se o sistema não suportar pt_BR
+    pass
 
 app = FastAPI()
 
@@ -36,7 +36,7 @@ class PayloadAutorizacao(BaseModel):
     corretagem_number: int
     pendencia: bool
     pendencia_texto: str = ""
-    tipo_template: str  # exemplo: "autorizacao_corretor" ou "autorizacao_imobiliaria"
+    tipo_template: str
 
 def gerar_data_extenso():
     meses = {
@@ -65,7 +65,6 @@ def gerar_pdf_autorizacao(dados: PayloadAutorizacao):
         return JSONResponse(status_code=400, content={"status": "erro", "mensagem": "Tipo de template inválido."})
 
     template_path = TEMPLATE_MAP[dados.tipo_template]
-
     valor_mask_brl = f"{dados.valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     corretagem_text = num2words(dados.corretagem_number, lang='pt_BR')
     data_completa = gerar_data_extenso()
@@ -99,12 +98,16 @@ def gerar_pdf_autorizacao(dados: PayloadAutorizacao):
                 p.text = p.text.replace(chave, v)
 
     doc.save(docx_path)
-    convert(docx_path)
+
+    # Conversão com LibreOffice em modo headless (Linux)
+    subprocess.run([
+        "libreoffice", "--headless", "--convert-to", "pdf", "--outdir", temp_dir, docx_path
+    ], check=True)
 
     pdf_name = os.path.basename(pdf_path)
     return {
         "status": "sucesso",
-        "tipo": "autorizacao-de-venda",        
+        "tipo": "autorizacao-de-venda",
         "pdf_name": pdf_name,
         "pdf_url": f"http://localhost:8000/download/{pdf_name}"
     }
