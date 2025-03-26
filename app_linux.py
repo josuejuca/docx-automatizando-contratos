@@ -10,6 +10,7 @@ import uuid
 import tempfile
 import locale
 import subprocess
+from fastapi.middleware.cors import CORSMiddleware # CORS
 
 # Força a localidade para português (para formatar data e número corretamente)
 try:
@@ -18,6 +19,14 @@ except locale.Error:
     pass
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todas as origens (você pode restringir se necessário)
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos os métodos (GET, POST, etc.)
+    allow_headers=["*"],  # Permite todos os cabeçalhos
+)
 
 TEMPLATE_MAP = {
     "autorizacao_corretor": "templates/autorizacao-de-venda-corretor-3.docx",
@@ -109,7 +118,7 @@ def gerar_pdf_autorizacao(dados: PayloadAutorizacao):
         "status": "sucesso",
         "tipo": "autorizacao-de-venda",
         "pdf_name": pdf_name,
-        "pdf_url": f"http://localhost:8000/download/{pdf_name}"
+        "pdf_url": f"https://docx.imogo.com.br/download/{pdf_name}"
     }
 
 @app.get("/download/{pdf_name}")
