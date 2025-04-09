@@ -160,8 +160,8 @@ class DadosContrato(BaseModel):
     corretores: List[Corretor]
     testemunhas: List[Testemunhas]
 
-@app.post("/gerar-pdf/contrato")
-async def gerar_pdf_contrato(dados: DadosContrato):
+@app.post("/gerar-pdf/contrato-corretagem")
+async def gerar_pdf_contrato_corretagem(dados: DadosContrato):
     try:
         # Gera o documento .docx em memória
         buffer = preencher_contrato(
