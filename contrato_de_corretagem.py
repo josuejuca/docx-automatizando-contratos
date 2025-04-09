@@ -41,17 +41,6 @@ def substituir_variaveis_em_runs(doc, contexto: dict):
             for cell in row.cells:
                 substituir_em_paragrafos(cell.paragraphs)
 
-# def preencher_por_variaveis(tabela, contexto):
-#     for row in tabela.rows:
-#         for cell in row.cells:
-#             for para in cell.paragraphs:
-#                 texto = para.text
-#                 for chave, valor in contexto.items():
-#                     padrao = re.compile(rf"(?<=\b){re.escape(chave)}(?=\b)", re.IGNORECASE)
-#                     if padrao.search(texto):
-#                         texto = padrao.sub(str(valor), texto)
-#                 para.text = texto
-
 def preencher_por_variaveis(tabela, contexto):
     for row in tabela.rows:
         for cell in row.cells:
@@ -197,7 +186,7 @@ def preencher_contrato(
                 texto = texto.replace("cnpj_number_comissao", c["cnpj"])
                 texto = texto.replace("corretagem_percentual", f'{c["participacao"]:.0f}%')
                 valor_individual = valor_comissao * (c["participacao"] / 100)
-                texto = texto.replace("valor_corretagem", f'R$ {valor_individual:,.0f}'.replace(",", "X").replace(".", ",").replace("X", "."))
+                texto = texto.replace("valor_corretagem", f'R$ {valor_individual:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."))
                 cell.text = texto
         tabela_com._tbl.remove(linha_modelo._tr)
         for para in doc.paragraphs:

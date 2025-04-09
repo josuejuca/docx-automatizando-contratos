@@ -116,7 +116,7 @@ def gerar_pdf_autorizacao(dados: PayloadAutorizacao):
 
     # Conversão com LibreOffice em modo headless (Linux)
     subprocess.run([
-        "libreoffice", "--headless", "--convert-to", "pdf", "--outdir", temp_dir, docx_path
+        "libreoffice", "--headless", "--convert-to", "pdf:writer_pdf_Export", "--outdir", temp_dir, docx_path
     ], check=True)
 
     pdf_name = os.path.basename(pdf_path)
@@ -188,7 +188,7 @@ async def gerar_pdf_contrato_corretagem(dados: DadosContrato):
 
         # Converte o .docx em PDF usando LibreOffice headless
         subprocess.run([
-            "libreoffice", "--headless", "--convert-to", "pdf", "--outdir", temp_dir, docx_path
+            "libreoffice", "--headless", "--convert-to", "pdf:writer_pdf_Export", "--outdir", temp_dir, docx_path
         ], check=True)
 
         pdf_name = os.path.basename(pdf_path)
