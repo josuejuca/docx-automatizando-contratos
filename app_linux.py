@@ -120,10 +120,13 @@ def gerar_pdf_autorizacao(dados: PayloadAutorizacao):
     ], check=True)
 
     pdf_name = os.path.basename(pdf_path)
+    docx_name = os.path.basename(docx_path)
     return {
         "status": "sucesso",
         "tipo": "autorizacao-de-venda",
         "pdf_name": pdf_name,
+        "docx_name": docx_name,
+        "docx_url": f"https://docx.imogo.com.br/download/{docx_name}",
         "pdf_url": f"https://docx.imogo.com.br/download/{pdf_name}"
     }
 
@@ -189,10 +192,13 @@ async def gerar_pdf_contrato_corretagem(dados: DadosContrato):
         ], check=True)
 
         pdf_name = os.path.basename(pdf_path)
+        docx_name = os.path.basename(docx_path)
         return {
             "status": "sucesso",
             "tipo": "contrato-de-corretagem",
             "pdf_name": pdf_name,
+            "docx_name": docx_name,
+            "docx_url": f"https://docx.imogo.com.br/download/{docx_name}",
             "pdf_url": f"https://docx.imogo.com.br/download/{pdf_name}"
         }
     except Exception as e:
