@@ -11,7 +11,8 @@ import tempfile
 import locale
 import subprocess
 from fastapi.middleware.cors import CORSMiddleware # CORS
-
+from contrato_de_corretagem import preencher_contrato
+from typing import List
 # Força a localidade para português (para formatar data e número corretamente)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
@@ -29,10 +30,11 @@ app.add_middleware(
 )
 
 TEMPLATE_MAP = {
-    "autorizacao_corretor": "templates/autorizacao-de-venda-corretor-3.docx",
-    "autorizacao_imobiliaria": "templates/autorizacao-de-venda-imob.docx"
+    "autorizacao_corretor": "templates/autorizacao-de-venda-corretor.docx",
+    "autorizacao_imobiliaria": "templates/autorizacao-de-venda-imob.docx",
+    "contrato_corretagem": "templates/contrato-de-corretagem.docx",
 }
-
+# Autorizacao de venda
 class PayloadAutorizacao(BaseModel):
     vendedor: str
     cpf_mask: str
@@ -67,6 +69,10 @@ data, à exceção de {pendencia_texto}."""
 quaisquer ônus judicial, extrajudicial, hipoteca legal ou convencional, foro ou pensão e está quite
 com todos os impostos, taxas, inclusive contribuições condominiais, se houver, até a presente
 data, sem exceção."""
+
+@app.get("/")
+def root():
+    return {"message": "Hello Clancy!"}
 
 @app.post("/gerar-pdf/autorizacao")
 def gerar_pdf_autorizacao(dados: PayloadAutorizacao):
@@ -121,6 +127,79 @@ def gerar_pdf_autorizacao(dados: PayloadAutorizacao):
         "pdf_url": f"https://docx.imogo.com.br/download/{pdf_name}"
     }
 
+# fim autorizaçao de venda
+# Contrato de corretagem
+class Contratante(BaseModel):
+    nome: str
+    email: str
+    endereco: str
+    cpf: str
+    telefone: str
+    cidade: str
+    cep: str
+    uf: str
+
+class Corretor(BaseModel):
+    nome: str
+    cnpj: str
+    endereco: str
+    telefone: str
+    creci: str
+    participacao: float
+
+class Testemunhas(BaseModel):
+    nome: str
+    rg: str
+    cpf: str    
+
+class DadosContrato(BaseModel):
+    endereco_imovel: str
+    valor_venda: float
+    porcentagem_corretagem: float
+    contratantes: List[Contratante]
+    corretores: List[Corretor]
+    testemunhas: List[Testemunhas]
+
+@app.post("/gerar-pdf/contrato")
+async def gerar_pdf_contrato(dados: DadosContrato):
+    try:
+        # Gera o documento .docx em memória
+        buffer = preencher_contrato(
+            dados.endereco_imovel,
+            [c.dict() for c in dados.contratantes],
+            [c.dict() for c in dados.corretores],
+            dados.valor_venda,
+            dados.porcentagem_corretagem,
+            dados.testemunhas,
+            modelo_path="templates/contrato-de-corretagem.docx"  # já está no padrão certo
+        )
+
+        # Salva o .docx temporariamente
+        temp_dir = tempfile.gettempdir()
+        unique_id = str(uuid.uuid4())
+        docx_path = os.path.join(temp_dir, f"{unique_id}.docx")
+        pdf_path = os.path.join(temp_dir, f"{unique_id}.pdf")
+
+        with open(docx_path, "wb") as f:
+            f.write(buffer.read())
+
+        # Converte o .docx em PDF usando LibreOffice headless
+        subprocess.run([
+            "libreoffice", "--headless", "--convert-to", "pdf", "--outdir", temp_dir, docx_path
+        ], check=True)
+
+        pdf_name = os.path.basename(pdf_path)
+        return {
+            "status": "sucesso",
+            "tipo": "contrato-de-corretagem",
+            "pdf_name": pdf_name,
+            "pdf_url": f"https://docx.imogo.com.br/download/{pdf_name}"
+        }
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "erro", "mensagem": str(e)})
+
+# Fim contrato de corretagem
+# Downlaods
 @app.get("/download/{pdf_name}")
 def baixar_pdf(pdf_name: str):
     pdf_path = os.path.join(tempfile.gettempdir(), pdf_name)
