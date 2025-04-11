@@ -1,0 +1,85 @@
+{
+    "endereco_imovel": "QNQ 10 CONJUNTO A CASA 20, CEILÂNDIA - DF",
+    "valor_venda": 350000.00,
+    "porcentagem_corretagem": 5,
+    "contratantes": [
+        {
+            "nome": "MARIA ALVES DA SILVA",
+            "email": "maria.silva@email.com",
+            "endereco": "QNQ 20 CJ A LT 10",
+            "cpf": "000.111.222-33",
+            "telefone": "(61) 99111-2233",
+            "cidade": "Ceilândia",
+            "cep": "72225-100",
+            "uf": "DF"
+        },
+        {
+            "nome": "JOÃO PEDRO COSTA",
+            "email": "joao.costa@email.com",
+            "endereco": "QNM 33 CJ F CASA 04",
+            "cpf": "123.456.789-10",
+            "telefone": "(61) 99876-5432",
+            "cidade": "Ceilândia",
+            "cep": "72255-000",
+            "uf": "DF"
+        },
+        {
+            "nome": "ANA LÚCIA RAMOS",
+            "email": "ana.ramos@email.com",
+            "endereco": "QNL 14 CONJ B CASA 15",
+            "cpf": "321.654.987-00",
+            "telefone": "(61) 99345-6789",
+            "cidade": "Taguatinga",
+            "cep": "72010-540",
+            "uf": "DF"
+        },
+        {
+            "nome": "PAULO CÉSAR LIMA",
+            "email": "paulo.lima@email.com",
+            "endereco": "QNO 19 CJ C LT 03",
+            "cpf": "222.333.444-55",
+            "telefone": "(61) 99666-7777",
+            "cidade": "Ceilândia",
+            "cep": "72235-230",
+            "uf": "DF"
+        }
+    ],
+    "corretores": [
+        {
+            "nome": "JULIANA FERREIRA",
+            "cnpj": "00.000.000/0001-11",
+            "endereco": "SRTVN QD 701 BLOCO B",
+            "telefone": "(61) 98123-4567",
+            "creci": "DF-12345",
+            "participacao": 5
+        },
+        {
+            "nome": "CARLOS EDUARDO",
+            "cnpj": "11.111.111/0001-22",
+            "endereco": "SIA TRECHO 3 LT 90",
+            "telefone": "(61) 98234-5678",
+            "creci": "DF-23456",
+            "participacao": 5
+        },
+        {
+            "nome": "FERNANDA DIAS",
+            "cnpj": "22.222.222/0001-33",
+            "endereco": "ASA SUL QD 707 BLOCO A",
+            "telefone": "(61) 98345-6789",
+            "creci": "DF-34567",
+            "participacao": 90
+        }
+    ],
+    "testemunhas": [
+        {
+            "nome": "JOSUE JUCA NONATO",
+            "rg": "123456789",
+            "cpf": "000.000.000-00"
+        },
+        {
+            "nome": "DIEGO NONATO",
+            "rg": "95875233",
+            "cpf": "000.888.000-88"
+        }
+    ]
+}
