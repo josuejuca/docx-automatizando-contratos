@@ -18,6 +18,30 @@ except locale.Error:
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
+# pesquisa 
+def inserir_avaliacao_pesquisa(doc, respostas: dict):
+    perguntas = [
+        "O que mais gostou?",
+        "O que menos gostou?",
+        "Compraria este imóvel?"
+    ]
+    chaves = ["mais_gostou", "menos_gostou", "compraria"]
+
+    idx, tabela = encontrar_tabela_antes_placeholder(doc, "{avaliacao_pesquisa}")
+    if tabela is None:
+        return
+
+    for i in range(len(perguntas)):
+        if i < len(tabela.rows):
+            celulas = tabela.rows[i].cells
+            if len(celulas) >= 2:
+                celulas[1].text = respostas.get(chaves[i], "")
+
+    # Remove o placeholder
+    for para in doc.paragraphs:
+        if "{avaliacao_pesquisa}" in para.text:
+            para.text = ""
+            break
 
 # NPS 
 
@@ -169,7 +193,9 @@ def preencher_declaracao_visita(payload: dict, template_path: str) -> str:
     if "avaliacao_nps" in payload:
         inserir_avaliacao_nps(doc, payload["avaliacao_nps"])
 
-
+    if "avaliacao_pesquisa" in payload:
+        inserir_avaliacao_pesquisa(doc, payload["avaliacao_pesquisa"])
+        
     # Salvar
     temp_dir = tempfile.gettempdir()
     output_path = os.path.join(temp_dir, f"declaracao_visita_{uuid.uuid4()}.docx")
