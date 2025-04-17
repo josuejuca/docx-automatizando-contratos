@@ -216,9 +216,7 @@ class Visitante(BaseModel):
     tel: str
 
 class DeclaracaoVisitaPayload(BaseModel):
-    endereco_imovel: str
-    valor_imovel: float
-    data_visita: str
+    endereco_imovel: str    
     visitantes: List[Visitante]
     nome_corretor: str
     creci_corretor: str
