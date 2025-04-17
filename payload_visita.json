@@ -1,0 +1,25 @@
+{
+    "endereco_imovel": "QNM 25 CONJUNTO F CASA 40, CEILANDIA SUL, BRASILIA/DF",    
+    "visitantes": [
+      {
+        "nome": "Josué Juca Nonato",
+        "cpf": "092.123.456-78",
+        "email": "suporte@imogo.com.br",
+        "tel": "(61) 98463-4855"
+      }
+    ],
+    "nome_corretor": "Jhone Mota",
+    "creci_corretor": "030807",
+    "isImob": true,
+    "name_imob": "quadraimob",
+    "number_creci": "24900",
+    "avaliacao_nps": {
+      "Localização": 5,
+      "Tamanho": 4,
+      "Planta (disposição dos cômodos)": 5,
+      "Qualidade / Acabamentos": 4,
+      "Estado de Conservação": 5,
+      "Áreas comuns": 3,
+      "Preço": 2
+    }
+  }

@@ -12,7 +12,8 @@ import locale
 import subprocess
 from fastapi.middleware.cors import CORSMiddleware # CORS
 from contrato_de_corretagem import preencher_contrato
-from typing import List
+from typing import List, Optional, Dict
+from declaracao_de_visita import preencher_declaracao_visita
 # Força a localidade para português (para formatar data e número corretamente)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
@@ -205,6 +206,65 @@ async def gerar_pdf_contrato_corretagem(dados: DadosContrato):
         return JSONResponse(status_code=500, content={"status": "erro", "mensagem": str(e)})
 
 # Fim contrato de corretagem
+
+# declaração de visita
+# Models
+class Visitante(BaseModel):
+    nome: str
+    cpf: str
+    email: str
+    tel: str
+
+class DeclaracaoVisitaPayload(BaseModel):
+    endereco_imovel: str
+    valor_imovel: float
+    data_visita: str
+    visitantes: List[Visitante]
+    nome_corretor: str
+    creci_corretor: str
+    isImob: bool = False
+    name_imob: Optional[str] = None
+    number_creci: Optional[str] = None
+    avaliacao_nps: Optional[Dict[str, int]] = None
+
+@app.post("/gerar-pdf/declaracao-visita")
+async def gerar_pdf_declaracao_visita(dados: DeclaracaoVisitaPayload):
+    try:
+        # Gera o documento .docx preenchido e salvo temporariamente
+        docx_path = preencher_declaracao_visita(dados.dict(), "templates/declaracao-de-visita.docx")
+
+        # Define caminhos temporários
+        temp_dir = tempfile.gettempdir()
+        unique_id = str(uuid.uuid4())
+        new_docx_path = os.path.join(temp_dir, f"{unique_id}.docx")
+        pdf_path = os.path.join(temp_dir, f"{unique_id}.pdf")
+
+        # Copia o arquivo gerado
+        os.rename(docx_path, new_docx_path)
+
+        # Converte para PDF com LibreOffice
+        subprocess.run([
+            "libreoffice", "--headless", "--convert-to", "pdf:writer_pdf_Export", "--outdir", temp_dir, new_docx_path
+        ], check=True)
+
+        pdf_name = os.path.basename(pdf_path)
+        docx_name = os.path.basename(new_docx_path)
+
+        return {
+            "status": "sucesso",
+            "tipo": "declaracao-de-visita",
+            "pdf_name": pdf_name,
+            "docx_name": docx_name,
+            "docx_url": f"https://docx.imogo.com.br/download/{docx_name}",
+            "pdf_url": f"https://docx.imogo.com.br/download/{pdf_name}"
+        }
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={
+            "status": "erro",
+            "mensagem": str(e)
+        })
+# fim declaração de visita
 # Downlaods
 @app.get("/download/{pdf_name}")
 def baixar_pdf(pdf_name: str):
