@@ -8,6 +8,7 @@ import locale
 import copy
 from docx.oxml import OxmlElement
 from docx.oxml.table import CT_Tbl
+from docx.shared import Pt
 
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
@@ -35,7 +36,10 @@ def inserir_avaliacao_pesquisa(doc, respostas: dict):
         if i < len(tabela.rows):
             celulas = tabela.rows[i].cells
             if len(celulas) >= 2:
-                celulas[1].text = respostas.get(chaves[i], "")
+                resposta = respostas.get(chaves[i], "")
+                par = celulas[1].paragraphs[0]
+                run = par.add_run(resposta)
+                par.paragraph_format.left_indent = Pt(5.7)  # ≈ 0,2 cm
 
     # Remove o placeholder
     for para in doc.paragraphs:
@@ -195,7 +199,7 @@ def preencher_declaracao_visita(payload: dict, template_path: str) -> str:
 
     if "avaliacao_pesquisa" in payload:
         inserir_avaliacao_pesquisa(doc, payload["avaliacao_pesquisa"])
-        
+
     # Salvar
     temp_dir = tempfile.gettempdir()
     output_path = os.path.join(temp_dir, f"declaracao_visita_{uuid.uuid4()}.docx")
