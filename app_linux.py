@@ -224,7 +224,7 @@ class DeclaracaoVisitaPayload(BaseModel):
     name_imob: Optional[str] = None
     number_creci: Optional[str] = None
     avaliacao_nps: Optional[Dict[str, int]] = None
-    avaliacao_pesquisa: Optional[Dict[str, int]] = None
+    avaliacao_pesquisa: Optional[Dict[str, str]] = None  
 
 @app.post("/gerar-pdf/declaracao-visita")
 async def gerar_pdf_declaracao_visita(dados: DeclaracaoVisitaPayload):
