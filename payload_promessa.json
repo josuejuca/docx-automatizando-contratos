@@ -1,0 +1,85 @@
+{
+  "vendedores": [
+    {
+      "nome": "Carlos Silva",
+      "nacionalidade": "brasileiro",
+      "rg_number": "1234567",
+      "ssp_rg": "SSP-DF",
+      "cpf": "123.456.789-00",
+      "estado_civil": "casado",
+      "nome_conjuge": "Maria Silva",
+      "nacionalidade_conjuge": "brasileira",
+      "rg_conjuge": "7654321",
+      "ssp_rg_conjuge": "SSP-DF",
+      "cpf_conjuge": "987.654.321-00",
+      "endereco": "QNM 25 Conjunto A Lote 12, Ceilândia Sul, Brasília - DF",
+      "telefone": "(61) 99999-9999"
+    }
+  ],
+  "compradores": [
+    {
+      "nome": "João Pereira",
+      "nacionalidade": "brasileiro",
+      "rg_number": "11223344",
+      "ssp_rg": "SSP-DF",
+      "cpf": "321.654.987-00",
+      "estado_civil": "solteiro",
+      "endereco": "QNM 10 Conjunto E Lote 23, Ceilândia Sul, Brasília - DF",
+      "telefone": "(61) 98888-8888"
+    },
+    {
+      "nome": "Fernanda Lima",
+      "nacionalidade": "brasileira",
+      "rg_number": "55667788",
+      "ssp_rg": "SSP-DF",
+      "cpf": "654.321.987-00",
+      "estado_civil": "viúva",
+      "endereco": "QNM 25 Conjunto F Lote 34, Ceilândia Sul, Brasília - DF",
+      "telefone": "(61) 97777-7777"
+    }
+  ],
+  "imovel": {
+    "endereco_imovel": "QNM 10 Conjunto G Lote 12, Ceilândia Sul, Brasília - DF",
+    "matricula_imovel": "123456",
+    "numero_cartorio": "2º Ofício de Registro de Imóveis do DF",
+    "valor_imovel": 360000.00,
+    "valor_sinal": 36000.00,
+    "forma_de_pagamento_sinal": "PIX",
+    "valor_comissao": 18000.00,
+    "gravame": true,
+    "tipo_gravame": "Alienação Fiduciária",
+    "beneficiario_gravame": "Banco XYZ S.A.",
+    "beneficiario_cnpj_gravame": "12.345.678/0001-90",
+    "registro_gravame": "5/123456",
+    "fgts": true,
+    "relacao_movies": "Fogão embutido, armários planejados na cozinha",
+    "isImob": true,
+    "nomeImob": "QUADRAIMOB IMOBILIARIA"
+  },
+  "pagamentos": [   
+    {
+      "tipo": "Financiamento",
+      "vencimento": "01/06/2025",
+      "valor": 250000.00,
+      "forma_pagamento": "Banco XYZ",
+      "juros": "11,29% a.a"
+    },
+    {
+      "tipo": "FGTS",
+      "vencimento": "01/06/2025",
+      "valor": 74000.00,
+      "forma_pagamento": "FGTS",
+      "juros": "0%"
+    }
+  ],
+  "testemunhas": [
+    {
+      "nome": "Ana Paula Rocha",
+      "cpf": "123.123.123-12"
+    },
+    {
+      "nome": "José Martins",
+      "cpf": "456.456.456-45"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware # CORS
 from contrato_de_corretagem import preencher_contrato
 from typing import List, Optional, Dict
 from declaracao_de_visita import preencher_declaracao_visita
+from promessa_compra_e_venda import preencher_promessa
 # Força a localidade para português (para formatar data e número corretamente)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
@@ -264,6 +265,102 @@ async def gerar_pdf_declaracao_visita(dados: DeclaracaoVisitaPayload):
             "mensagem": str(e)
         })
 # fim declaração de visita
+
+# promessa de compra e venda
+# Models
+class PessoaPromessa(BaseModel):
+    nome: str
+    nacionalidade: str
+    rg_number: str
+    ssp_rg: str
+    cpf: str
+    estado_civil: str
+    endereco: str
+    telefone: str
+    nome_conjuge: Optional[str] = None
+    nacionalidade_conjuge: Optional[str] = None
+    rg_conjuge: Optional[str] = None
+    ssp_rg_conjuge: Optional[str] = None
+    cpf_conjuge: Optional[str] = None
+
+class PagamentoPromessa(BaseModel):
+    tipo: str
+    vencimento: str
+    valor: float
+    forma_pagamento: str
+    juros: Optional[str] = None
+
+class ImovelPromessa(BaseModel):
+    endereco_imovel: str
+    matricula_imovel: str
+    numero_cartorio: str
+    gravame: bool = False
+    fgts: bool = False
+    tipo_gravame: Optional[str] = None
+    beneficiario_gravame: Optional[str] = None
+    beneficiario_cnpj_gravame: Optional[str] = None
+    registro_gravame: Optional[str] = None
+    valor_imovel: Optional[float] = None
+    valor_sinal: Optional[float] = None
+    forma_de_pagamento_sinal: Optional[str] = None
+    valor_comissao: Optional[float] = None 
+    relacao_movies: Optional[str] = None
+    isImob: Optional[bool] = False           # <-- novo campo booleano
+    nomeImob: Optional[str] = None           # <-- novo campo de nome
+class TestemunhaPromessa(BaseModel):
+    nome: str
+    cpf: str
+    
+class DadosPromessa(BaseModel):
+    vendedores: List[PessoaPromessa]
+    compradores: List[PessoaPromessa]
+    imovel: ImovelPromessa
+    pagamentos: List[PagamentoPromessa]
+    testemunhas: List[TestemunhaPromessa]
+
+@app.post("/gerar-pdf/promessa-compra-venda")
+async def gerar_pdf_promessa(dados: DadosPromessa):
+    try:
+        # Gera o documento .docx em memória
+        buffer = preencher_promessa(
+            dados_vendedores=[v.dict() for v in dados.vendedores],
+            dados_compradores=[c.dict() for c in dados.compradores],
+            dados_imovel=dados.imovel.dict(),
+            dados_testemunhas=[t.dict() for t in dados.testemunhas],
+            pagamentos=[p.dict() for p in dados.pagamentos],
+            modelo_path="templates/contrato-de-compra-e-venda.docx"
+        )
+
+        # Salva o .docx temporariamente
+        temp_dir = tempfile.gettempdir()
+        unique_id = str(uuid.uuid4())
+        docx_path = os.path.join(temp_dir, f"{unique_id}.docx")
+        pdf_path = os.path.join(temp_dir, f"{unique_id}.pdf")
+
+        with open(docx_path, "wb") as f:
+            f.write(buffer.read())
+
+        # Converte o .docx para PDF
+        subprocess.run([
+            "libreoffice", "--headless", "--convert-to", "pdf:writer_pdf_Export", "--outdir", temp_dir, docx_path
+        ], check=True)
+
+        pdf_name = os.path.basename(pdf_path)
+        docx_name = os.path.basename(docx_path)
+
+        return {
+            "status": "sucesso",
+            "tipo": "promessa-compra-venda",
+            "pdf_name": pdf_name,
+            "docx_name": docx_name,
+            "docx_url": f"https://docx.imogo.com.br/download/{docx_name}",
+            "pdf_url": f"https://docx.imogo.com.br/download/{pdf_name}"
+        }
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "erro", "mensagem": str(e)})
+
+
 # Downlaods
 @app.get("/download/{pdf_name}")
 def baixar_pdf(pdf_name: str):
