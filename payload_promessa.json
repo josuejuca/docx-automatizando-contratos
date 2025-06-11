@@ -6,7 +6,7 @@
       "rg_number": "1234567",
       "ssp_rg": "SSP-DF",
       "cpf": "123.456.789-00",
-      "estado_civil": "casado",
+      "estado_civil": "casado(a)",
       "nome_conjuge": "Maria Silva",
       "nacionalidade_conjuge": "brasileira",
       "rg_conjuge": "7654321",
@@ -23,7 +23,7 @@
       "rg_number": "11223344",
       "ssp_rg": "SSP-DF",
       "cpf": "321.654.987-00",
-      "estado_civil": "solteiro",
+      "estado_civil": "solteiro(a)",
       "endereco": "QNM 10 Conjunto E Lote 23, Ceilândia Sul, Brasília - DF",
       "telefone": "(61) 98888-8888"
     },
@@ -33,9 +33,24 @@
       "rg_number": "55667788",
       "ssp_rg": "SSP-DF",
       "cpf": "654.321.987-00",
-      "estado_civil": "viúva",
+      "estado_civil": "viúvo(a)",
       "endereco": "QNM 25 Conjunto F Lote 34, Ceilândia Sul, Brasília - DF",
       "telefone": "(61) 97777-7777"
+    },
+    {
+      "nome": "Carlos Silva",
+      "nacionalidade": "brasileiro",
+      "rg_number": "1234567",
+      "ssp_rg": "SSP-DF",
+      "cpf": "123.456.789-00",
+      "estado_civil": "casado(a)",
+      "nome_conjuge": "Maria Silva",
+      "nacionalidade_conjuge": "brasileira",
+      "rg_conjuge": "7654321",
+      "ssp_rg_conjuge": "SSP-DF",
+      "cpf_conjuge": "987.654.321-00",
+      "endereco": "QNM 25 Conjunto A Lote 12, Ceilândia Sul, Brasília - DF",
+      "telefone": "(61) 99999-9999"
     }
   ],
   "imovel": {

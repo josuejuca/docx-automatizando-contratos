@@ -97,19 +97,15 @@ def substituir_variaveis_em_runs(paragraph, variaveis_bold: Dict[str, str]):
 
     for placeholder, valor in variaveis_bold.items():
         if placeholder == "{gravame}" and placeholder in full_text:
-            for idx, run in enumerate(paragraph.runs):
+            for run in paragraph.runs:
                 if placeholder in run.text:
-                    # Remove espaço no final do run anterior, se houver
-                    if idx > 0 and paragraph.runs[idx-1].text.endswith(" "):
-                        paragraph.runs[idx-1].text = paragraph.runs[idx-1].text.rstrip()
-                    
                     parts = run.text.split(placeholder)
                     run.text = parts[0]
                     if len(parts) > 1:
                         paragraph.add_run(parts[1])
 
                     if valor:
-                        paragraph.add_run(", com exceção da ")
+                        paragraph.add_run("com exceção da ")
                         paragraph.add_run(valor.get("tipo_gravame", ""))
                         paragraph.add_run(" em favor da(o) ")
                         paragraph.add_run(valor.get("beneficiario_gravame", ""))
@@ -124,7 +120,8 @@ def substituir_variaveis_em_runs(paragraph, variaveis_bold: Dict[str, str]):
                         run_bold2 = paragraph.add_run("Interveniente Quitante")
                         run_bold2.bold = True
                         paragraph.add_run(", e a consequente averbação da baixa da referida Alienação Fiduciária ocorrerá junto com o registro da presente Compra e Venda.")
-                    return      
+                    return
+
         if placeholder in full_text:
             full_text = full_text.replace(placeholder, f"@@@{placeholder}@@@")
 
@@ -157,7 +154,7 @@ def montar_texto_pessoa(doc, lista_pessoas: List[Dict], paragrafo, tipo: str):
         run_nome.bold = True
         paragrafo.add_run(f", {p['nacionalidade']}, portador(a) da carteira de identidade nº {p['rg_number']}, expedido pela {p['ssp_rg']}, inscrito(a) no CPF sob o nº {p['cpf']}, {p['estado_civil']}, ")
 
-        if p.get('estado_civil', '').lower() in ["casado(a)", "casado(a)"] and all([
+        if p.get('estado_civil', '').lower() in ["casado", "casada"] and all([
             p.get('nome_conjuge'),
             p.get('nacionalidade_conjuge'),
             p.get('rg_conjuge'),
@@ -169,13 +166,13 @@ def montar_texto_pessoa(doc, lista_pessoas: List[Dict], paragrafo, tipo: str):
             run_conjuge.bold = True
             paragrafo.add_run(f", {p['nacionalidade_conjuge']}, portador(a) da carteira de identidade nº {p['rg_conjuge']}, expedido pela {p['ssp_rg_conjuge']}, inscrito(a) no CPF sob o nº {p['cpf_conjuge']}, ")
 
-        paragrafo.add_run(f"residente(s) e domiciliado(a)(s) no endereço {p['endereco']}, telefone {p['telefone']}" )
+        paragrafo.add_run(f"residente(s) e domiciliado(s) no endereço {p['endereco']}, telefone {p['telefone']}" )
 
-    paragrafo.add_run(", doravante denominado(a)(s) simplesmente, ")
+    paragrafo.add_run(", doravante denominado(s) simplesmente, ")
     if tipo == "vendedores":
-        run_final = paragrafo.add_run("PROMITENTE(S) VENDEDOR(A)(ES).")
+        run_final = paragrafo.add_run("PROMITENTE(S) VENDEDOR(ES).")
     else:
-        run_final = paragrafo.add_run("PROMISSÁRIO(A)(S) COMPRADOR(A)(ES).")
+        run_final = paragrafo.add_run("PROMISSÁRIO(S) COMPRADOR(ES).")
     run_final.bold = True
 
 def gerar_texto_fgts(paragraph, fgts_ativo: bool):
