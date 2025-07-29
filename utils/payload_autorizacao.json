@@ -1,0 +1,14 @@
+{
+  "vendedor": "JOSUE JUCA NONATO",
+  "cpf_mask": "092.403.801-24",
+  "razao_corretor": "IMOGO",
+  "cnpj_mask_corretor": "48.604.736/0001-03",
+  "creci_corretor": "24900",
+  "cartorio_number": "6",
+  "mat_number": "0000",
+  "valor": 350000,
+  "corretagem_number": 5,
+  "pendencia": true,
+  "pendencia_texto": "IPTU/TLP",
+  "tipo_template": "autorizacao_imobiliaria"
+}

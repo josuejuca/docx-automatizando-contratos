@@ -1,6 +1,6 @@
 # API - Gerador de Contratos
 
-### Ubuntu - Debian 
+### Ubuntu - Debian  
 
 ### ✅ 1. Dependências Python (instalar via `pip`)
 
@@ -21,6 +21,7 @@ Essa parte é obrigatória para que o `.docx` seja convertido em `.pdf` via linh
 ```bash
 sudo apt update
 sudo apt install libreoffice
+sudo apt install language-pack-pt
 ```
 
 ---

@@ -11,10 +11,11 @@ import tempfile
 import locale
 import subprocess
 from fastapi.middleware.cors import CORSMiddleware # CORS
-from contrato_de_corretagem import preencher_contrato
 from typing import List, Optional, Dict
-from declaracao_de_visita import preencher_declaracao_visita
-from promessa_compra_e_venda import preencher_promessa
+from api.contrato_de_corretagem import preencher_contrato
+from api.declaracao_de_visita import preencher_declaracao_visita
+from api.promessa_compra_e_venda import preencher_promessa
+
 # Força a localidade para português (para formatar data e número corretamente)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
