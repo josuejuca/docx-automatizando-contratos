@@ -1,4 +1,4 @@
-# teste versão com linux e libreoffice
+# teste versão com linux e libreoffice (app_linux.py)
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -8,14 +8,16 @@ from datetime import datetime
 import os
 import uuid
 import tempfile
+import shutil
 import locale
 import subprocess
 from fastapi.middleware.cors import CORSMiddleware # CORS
-from typing import List, Optional, Dict
-from api.contrato_de_corretagem import preencher_contrato
-from api.declaracao_de_visita import preencher_declaracao_visita
-from api.promessa_compra_e_venda import preencher_promessa
-
+from typing import List, Optional, Dict, Union, Any
+from pathlib import Path
+from app.contrato_de_corretagem import preencher_contrato
+from app.declaracao_de_visita import preencher_declaracao_visita
+from app.promessa_compra_e_venda import preencher_promessa
+from app.laudo_pptx import render_laudo  
 # Força a localidade para português (para formatar data e número corretamente)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
@@ -32,11 +34,41 @@ app.add_middleware(
     allow_headers=["*"],  # Permite todos os cabeçalhos
 )
 
+@app.on_event("startup")
+def ensure_user_fonts():
+    repo_fonts = Path(__file__).parent / "fonts" / "nunito" / "static"
+    if not repo_fonts.exists():
+        print(f"[fonts] diretório não encontrado: {repo_fonts} (pulando instalação)")
+        return
+
+    target = Path.home() / ".local/share/fonts/imogo-nunito"
+    try:
+        if target.exists():
+            shutil.rmtree(target)
+        target.mkdir(parents=True, exist_ok=True)
+
+        ttf_files = list(repo_fonts.glob("*.ttf"))
+        if not ttf_files:
+            print(f"[fonts] nenhum .ttf em {repo_fonts} (pulando)")
+            return
+
+        for f in ttf_files:
+            shutil.copy2(f, target / f.name)
+
+        # atualiza cache
+        subprocess.run(["fc-cache", "-f", "-v"], check=True)
+        print(f"[fonts] instalado {len(ttf_files)} arquivos em {target}")
+    except Exception as e:
+        # não derruba a API se falhar
+        print(f"[fonts] erro ao instalar fontes: {e}")
+
 TEMPLATE_MAP = {
     "autorizacao_corretor": "templates/autorizacao-de-venda-corretor.docx",
     "autorizacao_imobiliaria": "templates/autorizacao-de-venda-imob.docx",
     "contrato_corretagem": "templates/contrato-de-corretagem.docx",
 }
+
+LAUDO_PREFIX = "laudo_"
 # Autorizacao de venda
 class PayloadAutorizacao(BaseModel):
     vendedor: str
@@ -73,11 +105,11 @@ quaisquer ônus judicial, extrajudicial, hipoteca legal ou convencional, foro ou
 com todos os impostos, taxas, inclusive contribuições condominiais, se houver, até a presente
 data, sem exceção."""
 
-@app.get("/")
+@app.get("/", tags=["health"])
 def root():
     return {"message": "Hello Clancy!"}
 
-@app.post("/gerar-pdf/autorizacao")
+@app.post("/gerar-pdf/autorizacao" , tags=["Gerador de contratos"])
 def gerar_pdf_autorizacao(dados: PayloadAutorizacao):
     if dados.tipo_template not in TEMPLATE_MAP:
         return JSONResponse(status_code=400, content={"status": "erro", "mensagem": "Tipo de template inválido."})
@@ -166,7 +198,7 @@ class DadosContrato(BaseModel):
     corretores: List[Corretor]
     testemunhas: List[Testemunhas]
 
-@app.post("/gerar-pdf/contrato-corretagem")
+@app.post("/gerar-pdf/contrato-corretagem" , tags=["Gerador de contratos"])
 async def gerar_pdf_contrato_corretagem(dados: DadosContrato):
     try:
         # Gera o documento .docx em memória
@@ -228,7 +260,7 @@ class DeclaracaoVisitaPayload(BaseModel):
     avaliacao_nps: Optional[Dict[str, int]] = None
     avaliacao_pesquisa: Optional[Dict[str, str]] = None  
 
-@app.post("/gerar-pdf/declaracao-visita")
+@app.post("/gerar-pdf/declaracao-visita" , tags=["Gerador de contratos"])
 async def gerar_pdf_declaracao_visita(dados: DeclaracaoVisitaPayload):
     try:
         # Gera o documento .docx preenchido e salvo temporariamente
@@ -319,7 +351,7 @@ class DadosPromessa(BaseModel):
     pagamentos: List[PagamentoPromessa]
     testemunhas: List[TestemunhaPromessa]
 
-@app.post("/gerar-pdf/promessa-compra-venda")
+@app.post("/gerar-pdf/promessa-compra-venda" , tags=["Gerador de contratos"])
 async def gerar_pdf_promessa(dados: DadosPromessa):
     try:
         # Gera o documento .docx em memória
@@ -362,10 +394,133 @@ async def gerar_pdf_promessa(dados: DadosPromessa):
         return JSONResponse(status_code=500, content={"status": "erro", "mensagem": str(e)})
 
 
+# Avaliador imoGo
+
+class SerieTrimestral(BaseModel):
+    periodo: str
+    anuncios: Union[int, float, str]
+    vendidos: Union[int, float, str]
+
+class Chart1Payload(BaseModel):
+    data: List[SerieTrimestral]
+    label_key: str = "periodo"
+    anunciados_key: str = "anuncios"
+    vendidos_key: str = "vendidos"
+    ylim: Optional[List[float]] = None
+
+class Chart2Payload(BaseModel):
+    valores: List[Union[int, float, str]]  # 12 valores
+    inicio_ym: str = "2023-08"
+    moeda_prefix: str = "R$ "
+
+class LaudoRequest(BaseModel):
+    template_path: Optional[str] = "templates/laudo-imogo.pptx"
+    text: Dict[str, str] = {}          # vars de texto -> substituem {{chave}}
+    aliases: Dict[str, str] = {}       # ex.: {"qnt_anuncio": "qnt_anuncios"}
+    chart1: Optional[Chart1Payload] = None
+    chart2: Optional[Chart2Payload] = None
+    images: Dict[str, Union[str, List[Union[str,float,float]]]] = {}  # "foto_02": ["img/map/default.png", 2.5, 3.4]
+    chart_slots: Dict[str, str] = {"chart1":"grafico_01", "chart2":"grafico_02"}
+    
+
+@app.post("/gerar-pdf/laudo-imogo", tags=["Laudo imoGo"])
+def gerar_pdf_laudo(req: LaudoRequest):
+    try:
+        chart1_dict = req.chart1.dict() if req.chart1 else None
+        if chart1_dict and "data" in chart1_dict:
+            chart1_dict["data"] = [x for x in chart1_dict["data"]]
+        chart2_dict = req.chart2.dict() if req.chart2 else None
+
+        result = render_laudo(
+            template_path = req.template_path or "templates/laudo-imogo.pptx",
+            text_vars     = req.text or {},
+            aliases       = req.aliases or {},
+            chart1        = chart1_dict,
+            chart2        = chart2_dict,
+            images_bindings = req.images or {},
+            chart_slots   = req.chart_slots or {"chart1":"grafico_01","chart2":"grafico_02"},
+            out_basename  = req.out_basename
+        )
+
+        rid = result["id"]
+        has_pdf = bool(result.get("pdf_path"))
+
+        # >>> nomes públicos com prefixo no NOME:
+        pptx_name = f"{LAUDO_PREFIX}{rid}.pptx"
+        pdf_name  = f"{LAUDO_PREFIX}{rid}.pdf"
+
+        return {
+            "status": "sucesso",
+            "tipo": "laudo-imogo",
+            "pdf_name": pdf_name,
+            "pptx_name": pptx_name,
+            "pptx_url": f"https://docx.imogo.com.br/download/{pptx_name}",
+            "pdf_url": f"https://docx.imogo.com.br/download/{pdf_name}" if has_pdf else ""
+        }
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status":"erro","mensagem": str(e)})
+
+
+# fim avaliador imoGo
+
 # Downlaods
-@app.get("/download/{pdf_name}")
-def baixar_pdf(pdf_name: str):
-    pdf_path = os.path.join(tempfile.gettempdir(), pdf_name)
-    if not os.path.exists(pdf_path):
-        return JSONResponse(status_code=404, content={"status": "erro", "mensagem": "Arquivo não encontrado."})
-    return FileResponse(pdf_path, media_type="application/pdf", filename=pdf_name)
+@app.get("/download/{fname}", tags=["Download"])
+def baixar_arquivo(fname: str):
+    """
+    Compatível com:
+      - arquivos antigos na raiz do tmp (ex.: <uuid>.pdf/.docx)
+      - laudos no novo padrão: nome público "laudo_<uuid>.<ext>"
+    """
+    base = Path(tempfile.gettempdir())
+
+    # 1) Tenta caminho direto (modo antigo)
+    direct = base / fname
+    if direct.exists():
+        media = _guess_media_type(fname)
+        return FileResponse(str(direct), media_type=media, filename=fname)
+
+    # 2) Se começar com "laudo_", procuramos em tmp/laudo_<uuid>/<uuid>.<ext>
+    if fname.startswith(LAUDO_PREFIX):
+        stem_with_ext = fname[len(LAUDO_PREFIX):]  # "<uuid>.<ext>"
+        stem, ext = os.path.splitext(stem_with_ext)
+        if not ext:
+            return JSONResponse(status_code=404, content={"status": "erro", "mensagem": "Extensão não encontrada."})
+        ext = ext.lstrip(".").lower()
+
+        # valida UUID
+        try:
+            import uuid as _uuid
+            _ = _uuid.UUID(stem)
+        except Exception:
+            return JSONResponse(status_code=404, content={"status": "erro", "mensagem": "Identificador inválido."})
+
+        folder = base / f"{LAUDO_PREFIX}{stem}"
+        candidate = folder / f"{stem}.{ext}"
+        if candidate.exists():
+            media = _guess_media_type(fname)
+            return FileResponse(str(candidate), media_type=media, filename=fname)
+
+    # 3) fallback: também suportar padrão sem prefixo mas em pasta de laudo
+    #    ex.: alguém chama /download/<uuid>.pdf e o arquivo está em laudo_<uuid>/<uuid>.pdf
+    try:
+        stem, ext = os.path.splitext(fname)
+        if ext:
+            import uuid as _uuid
+            _ = _uuid.UUID(stem)
+            candidate = base / f"{LAUDO_PREFIX}{stem}" / fname
+            if candidate.exists():
+                media = _guess_media_type(fname)
+                return FileResponse(str(candidate), media_type=media, filename=fname)
+    except Exception:
+        pass
+
+    return JSONResponse(status_code=404, content={"status": "erro", "mensagem": "Arquivo não encontrado."})
+
+
+def _guess_media_type(fname: str) -> str:
+    ext = fname.lower().split(".")[-1]
+    return {
+        "pdf": "application/pdf",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    }.get(ext, "application/octet-stream")

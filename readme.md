@@ -113,5 +113,19 @@ sudo certbot --nginx -d docx.imogo.com.br
 
 Agora, ao acessar docx.imogo.com.br, você estará acessando sua API FastAPI rodando na porta `8000`.
 
-`` Esse é um exemplo usando o dominio da imogo.com.br, se você quiser usar (e deve) o seu dominio faça todos os passos trocando apenas o docx.imogo.com.br por <seu_dominio>
----
+`Esse é um exemplo usando o dominio da imogo.com.br, se você quiser usar (e deve) o seu dominio faça todos os passos trocando apenas o docx.imogo.com.br por <seu_dominio>`
+
+### Utils
+
+```bash
+fc-list | grep -i nunito
+```
+Use esse comando para verificar se a fonte nunito foi instalada 
+
+```bash
+$ fc-list | grep -i nunito
+/root/.local/share/fonts/imogo-nunito/Nunito-Bold.ttf: Nunito:style=Bold
+/root/.local/share/fonts/imogo-nunito/Nunito-Regular.ttf: Nunito:style=Regular
+```
+
+
