@@ -421,7 +421,7 @@ class LaudoRequest(BaseModel):
     chart2: Optional[Chart2Payload] = None
     images: Dict[str, Union[str, List[Union[str,float,float]]]] = {}  # "foto_02": ["img/map/default.png", 2.5, 3.4]
     chart_slots: Dict[str, str] = {"chart1":"grafico_01", "chart2":"grafico_02"}
-    
+    out_basename: Optional[str] = None
 
 @app.post("/gerar-pdf/laudo-imogo", tags=["Laudo imoGo"])
 def gerar_pdf_laudo(req: LaudoRequest):
