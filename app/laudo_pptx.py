@@ -21,6 +21,8 @@ from pptx.util import Inches
 from PIL import Image
 
 import uuid
+# conversão PPTX -> PDF (utils)
+from utils.pptx_pdf import convert_pptx_to_pdf
 
 # Prefixo de pasta no /tmp (ex.: /tmp/laudo_<UUID>)
 LAUDO_PREFIX = "laudo_"
@@ -179,7 +181,7 @@ def grafico_area_mensal_png(
     step = 5000.0
     ymax = max(step, math.ceil(max(valid) / step) * step)
 
-    purple = "#7a2be2"
+    purple = "#720d83"
     grid_c  = "#46484C"
     axis_c  = "#e6e6e6"
     txt_c   = "#46484C"
@@ -651,20 +653,11 @@ def render_laudo(
 
     # 5) Gera PDF (vetorial, se possível), senão fallback PNG->PDF
     pdf_path = work / f"{rid}.pdf"
-    try:
-        _libreoffice_pdf(out_pptx, work)
-    except Exception:
-        # Fallback: exporta PNGs e monta PDF raster (sempre funciona)
-        try:
-            pngs = _libreoffice_pngs(out_pptx, work)
-            _pngs_to_pdf(pngs, pdf_path)
-        except Exception:
-            # Sem PDF não quebra a rota: retornamos só o PPTX
-            pass
+    pdf_ok = convert_pptx_to_pdf(out_pptx, out_dir=work)
 
     return {
         "id": rid,
         "dir": str(work),
         "pptx_path": str(out_pptx),
-        "pdf_path": str(pdf_path) if pdf_path.exists() else "",
+        "pdf_path": str(pdf_path) if pdf_ok and pdf_path.exists() else ""
     }

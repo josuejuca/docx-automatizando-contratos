@@ -22,6 +22,7 @@ Essa parte é obrigatória para que o `.docx` seja convertido em `.pdf` via linh
 sudo apt update
 sudo apt install libreoffice
 sudo apt install language-pack-pt
+sudo apt-get install -y libreoffice-impress libreoffice-draw xvfb fontconfig fonts-dejavu-core
 ```
 
 ---
@@ -120,10 +121,11 @@ Agora, ao acessar docx.imogo.com.br, você estará acessando sua API FastAPI rod
 ```bash
 fc-list | grep -i nunito
 ```
-Use esse comando para verificar se a fonte nunito foi instalada 
+Use esse comando para verificar se a fonte nunito foi instalada: 
 
 ```bash
 $ fc-list | grep -i nunito
+# saida: 
 /root/.local/share/fonts/imogo-nunito/Nunito-Bold.ttf: Nunito:style=Bold
 /root/.local/share/fonts/imogo-nunito/Nunito-Regular.ttf: Nunito:style=Regular
 ```
